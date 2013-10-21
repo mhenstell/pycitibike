@@ -7,38 +7,19 @@ con = None
 client = Citibike()
 
 stations = {}
-oldStations = {}
 
-lastTime = 0
-
-# class Station:
-	
-# 	num   = 0
-# 	bikes = 0
-# 	docks = 0
-
-# 	def __init__(self, number):
-# 		self.num = number
-	
-# 	def update(self, bikes, docks):
-# 		self.bikes = bikes
-# 		self.docks = docks
-
-# 	def check(self, bikes, docks):
-# 		if bikes != self.bikes or docks != self.docks:
-# 			print "\tStation %s changed: Bikes: %s to %s, Docks: %s to %s" % (self.num, self.bikes, bikes, self.docks, docks)
-# 			self.update(bikes, docks)
-
+DATABASE = "../cbData.db"
+# DATABASE = "sampleData.db"
 
 try:
-	con = sqlite3.connect('../cbData.db')
+	con = sqlite3.connect(DATABASE)
 
 	cur = con.cursor()
-	cur.execute('SELECT SQLITE_VERSION()')
+	cur.execute('SELECT count(*) from stations')
 	data = cur.fetchone()
-	print "SQLite version: %s" % data
+	print "Number of stations: %s" % data
 except sqlite3.Error, e:
-	print "Error %s" % e.args[0]
+	print "SQLite Error %s" % e.args[0]
 	sys.exit(1)
 
 
@@ -53,27 +34,32 @@ except sqlite3.Error, e:
 # 	cur.execute(sql)
 # con.commit()
 
-while True:
 
-	timestamp = int(time.time())
-	print "Updating %s" % timestamp
+timestamp = int(time.time())
+print "Updating %s" % timestamp
 
-	stations = client.stations()
+stations = client.stations()
 
-	for station in stations:
-		sid = station['id']
-		if sid not in oldStations:
-			pass
-		elif station['availableDocks'] != oldStations[sid]['availableDocks'] or station['availableBikes'] != oldStations[sid]['availableBikes']:
-			
+for station in stations:
+	sid = station['id']
+
+	sql = "select availableBikes, availableDocks from stationlog where id = ? order by timestamp desc limit 1"
+
+	# if sid not in oldStations:
+	# 	pass
+	# elif station['availableDocks'] != oldStations[sid]['availableDocks'] or station['availableBikes'] != oldStations[sid]['availableBikes']:
+	
+	cur.execute(sql, (sid,))
+	result = cur.fetchone()
+	
+	try:
+		if int(result[0]) != station['availableBikes'] or int(result[1]) != station['availableDocks']:
 			sql = "insert into stationlog(id, timestamp, availableBikes, availableDocks) values (%i, %i, %i, %i)" % (sid, timestamp, station['availableBikes'], station['availableDocks'])
-			print sql
+			# print sid, "old: ", result[0], " new: ", station['availableBikes']
 			cur.execute(sql)
+			print "\tUpdated station %s" % sid
+	except:
+		pass
 
-		oldStations[sid] = station
-
-		# print station, oldStations[sid]
-
-	con.commit()
-
-	time.sleep(30)
+con.commit()
+con.close()
