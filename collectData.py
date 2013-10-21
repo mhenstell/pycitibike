@@ -31,7 +31,7 @@ lastTime = 0
 
 
 try:
-	con = sqlite3.connect('test.db')
+	con = sqlite3.connect('../cbData.db')
 
 	cur = con.cursor()
 	cur.execute('SELECT SQLITE_VERSION()')
@@ -42,38 +42,38 @@ except sqlite3.Error, e:
 	sys.exit(1)
 
 
-stations = client.stations()
+# stations = client.stations()
 
-for station in stations:
-	sid = station['id']
-	status = station['status']
-	istatus = 0
-	if status == "Active": istatus = 1
-	sql = "insert into knownStations(id, status) values (%i, %i)" % (sid, istatus)
-	cur.execute(sql)
-con.commit()
+# for station in stations:
+# 	sid = station['id']
+# 	status = station['status']
+# 	istatus = 0
+# 	if status == "Active": istatus = 1
+# 	sql = "insert into knownStations(id, status) values (%i, %i)" % (sid, istatus)
+# 	cur.execute(sql)
+# con.commit()
 
-# while True:
+while True:
 
-# 	timestamp = int(time.time())
-# 	print "Updating %s" % timestamp
+	timestamp = int(time.time())
+	print "Updating %s" % timestamp
 
-# 	stations = client.stations()
+	stations = client.stations()
 
-# 	for station in stations:
-# 		sid = station['id']
-# 		if sid not in oldStations:
-# 			pass
-# 		elif station['availableDocks'] != oldStations[sid]['availableDocks'] or station['availableBikes'] != oldStations[sid]['availableBikes']:
+	for station in stations:
+		sid = station['id']
+		if sid not in oldStations:
+			pass
+		elif station['availableDocks'] != oldStations[sid]['availableDocks'] or station['availableBikes'] != oldStations[sid]['availableBikes']:
 			
-# 			sql = "insert into stationlog(id, timestamp, availableBikes, availableDocks) values (%i, %i, %i, %i)" % (sid, timestamp, station['availableBikes'], station['availableDocks'])
-# 			print sql
-# 			cur.execute(sql)
+			sql = "insert into stationlog(id, timestamp, availableBikes, availableDocks) values (%i, %i, %i, %i)" % (sid, timestamp, station['availableBikes'], station['availableDocks'])
+			print sql
+			cur.execute(sql)
 
-# 		oldStations[sid] = station
+		oldStations[sid] = station
 
-# 		# print station, oldStations[sid]
+		# print station, oldStations[sid]
 
-# 	con.commit()
+	con.commit()
 
-# 	time.sleep(5)
+	time.sleep(30)
