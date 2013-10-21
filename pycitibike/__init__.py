@@ -16,7 +16,11 @@ class Citibike(object):
         :param kwargs: a dict of key values for the API.
             I'm actually not fully sure what this supports yet
         """
-        return self._get('data2/stations', kwargs)
+        return self._get('data2/stations.php?updateOnly=true', kwargs)
+
+    def fullStations(self, **kwargs):
+        return self._get('data2/stations.php', kwargs)
+
 
     def helmets(self, **kwargs):
         """
